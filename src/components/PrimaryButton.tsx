@@ -1,25 +1,70 @@
+// src/components/PrimaryButton.tsx
 import React from "react";
-import { TouchableOpacity, Text, StyleSheet, GestureResponderEvent } from "react-native";
+import { Pressable, Text, StyleSheet, ViewStyle, TextStyle } from "react-native";
 import { colors } from "../theme";
 
-type Props = { title: string; onPress?: (e: GestureResponderEvent) => void; };
+type Variant = "primary" | "warning" | "danger" | "ghost";
 
-export default function PrimaryButton({ title, onPress }: Props) {
+interface Props {
+  title: string;
+  onPress: () => void;
+  disabled?: boolean;
+  variant?: Variant;
+  style?: ViewStyle;
+  textStyle?: TextStyle;
+}
+
+export default function PrimaryButton({
+  title,
+  onPress,
+  disabled = false,
+  variant = "primary",
+  style,
+  textStyle,
+}: Props) {
+  const { bg, txt } = getPalette(variant, disabled);
+
   return (
-    <TouchableOpacity style={styles.btn} onPress={onPress}>
-      <Text style={styles.btnText}>{title}</Text>
-    </TouchableOpacity>
+    <Pressable
+      accessibilityRole="button"
+      onPress={onPress}
+      disabled={disabled}
+      style={({ pressed }) => [
+        styles.base,
+        { backgroundColor: bg, opacity: disabled ? 0.6 : pressed ? 0.8 : 1 },
+        style,
+      ]}
+    >
+      <Text style={[styles.text, { color: txt }, textStyle]}>{title}</Text>
+    </Pressable>
   );
 }
 
+function getPalette(variant: Variant, disabled: boolean) {
+  if (variant === "ghost") {
+    return { bg: "transparent", txt: disabled ? colors.subtext : colors.primary };
+  }
+  if (variant === "warning") {
+    return { bg: colors.yellow, txt: "#121212" };
+  }
+  if (variant === "danger") {
+    return { bg: colors.red, txt: "#ffffff" };
+  }
+  return { bg: colors.primary, txt: "#121212" };
+}
+
 const styles = StyleSheet.create({
-  btn: {
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 12,
-    backgroundColor: colors.primary,
-    marginTop: 16,
+  base: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
     alignItems: "center",
+    justifyContent: "center",
+    marginVertical: 4,
   },
-  btnText: { color: colors.black, fontWeight: "700" },
+  text: {
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
 });

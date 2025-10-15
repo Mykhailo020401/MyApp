@@ -1,13 +1,15 @@
 export const colors = {
   bg: "#121212",
-  primary: "#00bfff",
-  text: "#eaeaea",
-  subtext: "#cfcfcf",
-  card: "#1f8ae5",
-  black: "#000",
+  surface: "#1e1f22",
+  primary: "#61dafb",
+  text: "#ffffff",
+  subtext: "#b0b0b0",
+  gray: "#8a8a8a",
+  yellow: "#d4a72c",
+  red: "#c75450",
 };
 
 export const layout = {
-  screenPadding: 24,
-  footerBottom: 20,
+  screenPadding: 16,
+  radius: 12,
 };

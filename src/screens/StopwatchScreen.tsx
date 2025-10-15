@@ -1,13 +1,11 @@
-
-import React, { useRef, useState } from "react";
-import { View, Text, StyleSheet } from "react-native";
+// src/screens/StopwatchScreen.tsx
+import React, { useEffect, useRef, useState } from "react";
+import { View, Text } from "react-native";
 import PrimaryButton from "../components/PrimaryButton";
-import { colors, layout } from "../theme";
+import { styles } from "./StopwatchScreen.styles";
 
 export default function StopwatchScreen() {
-  const [ms, setMs] = useState(0);
-
-  // ✅ універсально працює і в RN, і в web
+  const [ms, setMs] = useState<number>(0);
   const timer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const start = () => {
@@ -16,28 +14,36 @@ export default function StopwatchScreen() {
   };
 
   const stop = () => {
-    if (!timer.current) return;
-    clearInterval(timer.current);
-    timer.current = null;
+    if (timer.current) {
+      clearInterval(timer.current);
+      timer.current = null;
+    }
   };
 
-  const reset = () => { stop(); setMs(0); };
+  const reset = () => {
+    stop();
+    setMs(0);
+  };
 
-  const s = (ms / 1000).toFixed(2);
+  useEffect(() => () => stop(), []);
+
+  const format = (totalMs: number) => {
+    const minutes = Math.floor(totalMs / 60000);
+    const seconds = Math.floor((totalMs % 60000) / 1000);
+    const cs = Math.floor((totalMs % 1000) / 10);
+    const mm = String(minutes).padStart(2, "0");
+    const ss = String(seconds).padStart(2, "0");
+    const cc = String(cs).padStart(2, "0");
+    return `${mm}:${ss}.${cc}`;
+  };
 
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Секундомір</Text>
-      <Text style={styles.time}>{s}s</Text>
+      <Text style={styles.time}>{format(ms)}</Text>
       <PrimaryButton title="Старт" onPress={start} />
       <PrimaryButton title="Стоп" onPress={stop} />
       <PrimaryButton title="Скинути" onPress={reset} />
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg, padding: layout.screenPadding, alignItems: "center", justifyContent: "center" },
-  title: { color: colors.primary, fontSize: 22, fontWeight: "800", marginBottom: 12 },
-  time: { color: "#fff", fontSize: 40, fontWeight: "700", marginBottom: 12 },
-});

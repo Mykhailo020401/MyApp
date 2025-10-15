@@ -1,54 +1,59 @@
-
-
+// src/screens/CalcScreen.tsx
 import React, { useState } from "react";
-import { View, Text, StyleSheet, TextInput, TouchableOpacity } from "react-native";
-import { colors, layout } from "../theme";
+import { View, Text } from "react-native";
+import Input from "../components/Input";
+import PrimaryButton from "../components/PrimaryButton";
+import { styles } from "./CalcScreen.styles";
+
+type Op = "+" | "-" | "*" | "/" | null;
 
 export default function CalcScreen() {
   const [a, setA] = useState<string>("");
   const [b, setB] = useState<string>("");
-  const [op, setOp] = useState<"+" | "-" | "*" | "/">("+");
-  const [res, setRes] = useState<string>("");
+  const [op, setOp] = useState<Op>(null);
+  const [result, setResult] = useState<string>("");
 
   const compute = () => {
-    const x = parseFloat(a); const y = parseFloat(b);
-    if (isNaN(x) || isNaN(y)) return setRes("Введи числа");
-    let r = 0;
-    switch (op) { case "+": r = x + y; break; case "-": r = x - y; break; case "*": r = x * y; break; case "/": r = y === 0 ? NaN : x / y; }
-    setRes(isNaN(r) ? "Ділення на 0" : r.toString());
+    const x = Number(a.replace(",", "."));
+    const y = Number(b.replace(",", "."));
+    if (!isFinite(x) || !isFinite(y) || !op) {
+      setResult("—");
+      return;
+    }
+    let r: number;
+    switch (op) {
+      case "+": r = x + y; break;
+      case "-": r = x - y; break;
+      case "*": r = x * y; break;
+      case "/": r = y === 0 ? NaN : x / y; break;
+      default: r = NaN;
+    }
+    setResult(isFinite(r) ? String(r) : "—");
   };
-
-  const OpBtn = ({ v }: { v: typeof op }) => (
-    <TouchableOpacity style={[styles.op, op === v && styles.opActive]} onPress={() => setOp(v)}>
-      <Text style={styles.opText}>{v}</Text>
-    </TouchableOpacity>
-  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Калькулятор</Text>
-      <View style={styles.row}>
-        <TextInput keyboardType="numeric" value={a} onChangeText={setA} style={styles.input} placeholder="A" placeholderTextColor="#9aa0a6" />
-        <TextInput keyboardType="numeric" value={b} onChangeText={setB} style={styles.input} placeholder="B" placeholderTextColor="#9aa0a6" />
+      <View>
+        <Text style={styles.label}>Число A</Text>
+        <Input value={a} onChangeText={setA} placeholder="0" />
       </View>
-      <View style={styles.row}>
-        <OpBtn v="+" /><OpBtn v="-" /><OpBtn v="*" /><OpBtn v="/" />
+
+      <View>
+        <Text style={styles.label}>Число B</Text>
+        <Input value={b} onChangeText={setB} placeholder="0" />
       </View>
-      <TouchableOpacity style={styles.calc} onPress={compute}><Text style={styles.calcText}>Обчислити</Text></TouchableOpacity>
-      <Text style={styles.result}>Результат: {res}</Text>
+
+      <View style={styles.opRow}>
+        <PrimaryButton title="+" onPress={() => setOp("+")} />
+        <PrimaryButton title="−" onPress={() => setOp("-")} />
+        <PrimaryButton title="×" onPress={() => setOp("*")} />
+        <PrimaryButton title="÷" onPress={() => setOp("/")} />
+      </View>
+
+      <PrimaryButton title="Обчислити" onPress={compute} />
+
+      <Text style={styles.label}>Результат</Text>
+      <Text style={styles.value}>{result || "—"}</Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: colors.bg, padding: layout.screenPadding },
-  title: { color: colors.primary, fontSize: 22, fontWeight: "800", textAlign: "center", marginBottom: 12 },
-  row: { flexDirection: "row", gap: 8, marginBottom: 8 },
-  input: { flex: 1, backgroundColor: "#1e1f22", color: colors.text, borderRadius: 10, paddingHorizontal: 12, height: 44 },
-  op: { backgroundColor: "#1e1f22", paddingHorizontal: 16, height: 44, borderRadius: 10, justifyContent: "center" },
-  opActive: { backgroundColor: colors.card },
-  opText: { color: colors.text, fontWeight: "700" },
-  calc: { backgroundColor: colors.card, borderRadius: 10, paddingVertical: 12, alignItems: "center", marginTop: 8 },
-  calcText: { color: "#fff", fontWeight: "700" },
-  result: { color: colors.text, marginTop: 12, textAlign: "center", fontSize: 16 },
-});
