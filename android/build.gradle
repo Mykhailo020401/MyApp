@@ -1,3 +1,36 @@
+// pluginManagement {
+//     // якщо є — ок
+// }
+
+// plugins {
+//     // лише в цьому файлі, рідко використовується
+// }
+
+// buildscript {
+//     ext {
+//         buildToolsVersion = "30.0.2"
+//         minSdkVersion = 21
+//         compileSdkVersion = 30
+//         targetSdkVersion = 30
+//         kotlinVersion = "1.9.10"
+//     }
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+//     dependencies {
+//         classpath("com.android.tools.build:gradle:8.0.2") // або версія, що підходить
+//         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+//     }
+// }
+
+// allprojects {
+//     repositories {
+//         google()
+//         mavenCentral()
+//     }
+// }
+
 buildscript {
     ext {
         buildToolsVersion = "36.0.0"

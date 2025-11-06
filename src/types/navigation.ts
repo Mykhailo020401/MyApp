@@ -5,4 +5,5 @@ export type RootStackParamList = {
   Calc: undefined;
   Stopwatch: undefined;
   Counter: undefined;
+  Test: undefined;
 };

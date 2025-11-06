@@ -1,34 +1,43 @@
 // src/screens/CalcScreen.tsx
-import React, { useState } from "react";
-import { View, Text } from "react-native";
-import Input from "../components/Input";
-import PrimaryButton from "../components/PrimaryButton";
-import { styles } from "./CalcScreen.styles";
+import React, { useState } from 'react';
+import { View, Text } from 'react-native';
+import Input from '../components/Input';
+import PrimaryButton from '../components/PrimaryButton';
+import { styles } from './CalcScreen.styles';
 
-type Op = "+" | "-" | "*" | "/" | null;
+type Op = '+' | '-' | '*' | '/' | null;
 
 export default function CalcScreen() {
-  const [a, setA] = useState<string>("");
-  const [b, setB] = useState<string>("");
+  const [a, setA] = useState<string>('');
+  const [b, setB] = useState<string>('');
   const [op, setOp] = useState<Op>(null);
-  const [result, setResult] = useState<string>("");
+  const [result, setResult] = useState<string>('');
 
   const compute = () => {
-    const x = Number(a.replace(",", "."));
-    const y = Number(b.replace(",", "."));
+    const x = Number(a.replace(',', '.'));
+    const y = Number(b.replace(',', '.'));
     if (!isFinite(x) || !isFinite(y) || !op) {
-      setResult("—");
+      setResult('—');
       return;
     }
     let r: number;
     switch (op) {
-      case "+": r = x + y; break;
-      case "-": r = x - y; break;
-      case "*": r = x * y; break;
-      case "/": r = y === 0 ? NaN : x / y; break;
-      default: r = NaN;
+      case '+':
+        r = x + y;
+        break;
+      case '-':
+        r = x - y;
+        break;
+      case '*':
+        r = x * y;
+        break;
+      case '/':
+        r = y === 0 ? NaN : x / y;
+        break;
+      default:
+        r = NaN;
     }
-    setResult(isFinite(r) ? String(r) : "—");
+    setResult(isFinite(r) ? String(r) : '—');
   };
 
   return (
@@ -44,16 +53,16 @@ export default function CalcScreen() {
       </View>
 
       <View style={styles.opRow}>
-        <PrimaryButton title="+" onPress={() => setOp("+")} />
-        <PrimaryButton title="−" onPress={() => setOp("-")} />
-        <PrimaryButton title="×" onPress={() => setOp("*")} />
-        <PrimaryButton title="÷" onPress={() => setOp("/")} />
+        <PrimaryButton title="+" onPress={() => setOp('+')} />
+        <PrimaryButton title="−" onPress={() => setOp('-')} />
+        <PrimaryButton title="×" onPress={() => setOp('*')} />
+        <PrimaryButton title="÷" onPress={() => setOp('/')} />
       </View>
 
       <PrimaryButton title="Обчислити" onPress={compute} />
 
       <Text style={styles.label}>Результат</Text>
-      <Text style={styles.value}>{result || "—"}</Text>
+      <Text style={styles.value}>{result || '—'}</Text>
     </View>
   );
 }
