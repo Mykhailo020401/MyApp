@@ -1,190 +1,303 @@
-// import { useState } from 'react';
-// import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
-// import { useForm, Controller } from 'react-hook-form';
-// import { z } from 'zod';
-// import { zodResolver } from '@hookform/resolvers/zod';
+import {
+  Switch,
+  View,
+  Text,
+  StyleSheet,
+  Button,
+  TextInput,
+  //Alert,
+  ScrollView,
+  FlatList,
+  //Pressable,
+  TouchableOpacity,
+} from 'react-native';
+import uuid from 'react-native-uuid';
 
-// export default function TestCopy() {
-//   //ПОЛЯ
-//   const [formName, setFormName] = useState('');
-//   const [formSurname, setFormSurname] = useState('');
-//   const [formAge, setFormAge] = useState('');
-//   const [hasJobForm, sethasJobForm] = useState(false);
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useState, useEffect, useCallback } from 'react';
+import { useForm, SubmitHandler, Controller } from 'react-hook-form';
+import { formSchema, FormSchema } from './FormSchema';
+import { zodResolver } from '@hookform/resolvers/zod';
 
-//   const schema = z.object({
-//     name: z.string().min(2, { message: 'Поле має містити мінімум 2 символи.' }),
-//     surname: z
-//       .string()
-//       .min(2, { message: 'Поле має містити мінімум 2 символи.' }),
-//     age: z.number().min(2, { message: 'Поле має містити мінімум 2 символи.' }),
+export default function TestCopy() {
+  const [listOfUsers, setListOfUser] = useState<Form[]>([]);
 
-//     hasJob: z.boolean(),
-//   });
+  const [formHasJob, setFormHasJob] = useState(false);
+  const onOffSwitch = () => setFormHasJob(prev => !prev);
 
-//   const FormComponent = () => {
-//     const {
-//       control,
-//       handleSubmit,
-//       formState: { errors },
-//     } = useForm({
-//       resolver: zodResolver(schema),
-//     });
-//   };
+  const renderItem = useCallback(
+    ({ item }: { item: Form }) => {
+      return (
+        <View style={style.list}>
+          <Text>ID: {item.id}</Text>
+          <Text>Ім`я: {item.name}</Text>
+          <Text>Прізвище: {item.lastname}</Text>
+          <Text>Вік: {item.age}</Text>
+          <Text>Робота: {item.hasJob ? 'Працює' : 'Не працює'}</Text>
+          <View
+            style={{
+              borderBottomColor: 'black',
+              borderBottomWidth: 1,
+              padding: 10,
+            }}
+          />
+        </View>
+      );
+    },
+    [listOfUsers],
+  );
 
-//   const onSubmit = data => {
-//     console.log(name);
-//   };
+  interface Form {
+    id: string;
+    name: string;
+    lastname: string;
+    age: number;
+    hasJob: boolean;
+  }
 
-//   return (
-//     <View>
-//       <Controller
-//         control={control}
-//         name="name"
-//         render={({ field: { onChange, onBlur, value } }) => (
-//           <TextInput
-//             style={styles.input}
-//             onBlur={onBlur}
-//             onChangeText={setFormName}
-//             value={formName}
-//             placeholder="Введіть ваше ім`я"
-//           />
-//         )}
-//       />
+  const userInformation: Form = {
+    id: '',
+    name: '',
+    lastname: '',
+    age: 0,
+    hasJob: false,
+  };
 
-//       {errors.name && <Text style={styles.error}>{errors.name.message}</Text>}
+  //Стан основного об`єкту
+  const [human, setHuman] = useState<Form>(userInformation);
 
-//       <Button title="Submit" onPress={handleSubmit(onSubmit)} />
-//     </View>
-//   );
-// }
+  const {
+    control,
+    handleSubmit,
+    formState: { isDirty, isSubmitting, errors, isValid },
+  } = useForm<FormSchema>({
+    resolver: zodResolver(formSchema),
+    mode: 'onChange',
+  });
 
-// const styles = StyleSheet.create({
-//   error: {
-//     color: 'red',
-//   },
-//   input: {
-//     marginTop: 10,
-//     backgroundColor: 'silver',
-//     borderColor: 'red',
-//     borderWidth: 1,
-//   },
-//   upButton: {
-//     marginTop: 20,
-//   },
-//   head: {
-//     color: 'red',
-//     padding: 20,
-//     marginTop: 50,
-//   },
+  const saveUser = async (data: Form[]) => {
+    setListOfUser(data);
+    try {
+      await AsyncStorage.setItem('todo_items_v1', JSON.stringify(data)); // і зберігаємо в AsyncStorage
+    } catch (e) {
+      console.warn('save error', e);
+    }
+  };
+  const onSubmit = async (data: FormSchema) => {
+    if (data) {
+      const id: string = uuid.v4();
 
-//   human: {
-//     color: 'white',
-//     padding: 5,
-//   },
-// });
-// // import React from 'react';
-// // import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
-// // import { useForm, Controller } from 'react-hook-form';
-// // import { any, string, z } from 'zod';
-// // import { zodResolver } from '@hookform/resolvers/zod';
-// // import { useState } from 'react';
+      const name: string = data.formName;
+      const lastname: string = data.formSurname;
+      const age: number = Number(data.formAge);
+      const hasJob: boolean = formHasJob;
+      const newUser: Form = {
+        id: id,
+        name: name,
+        lastname: lastname,
+        age: age,
+        hasJob: hasJob,
+      };
 
-// // // Define Zod schema for form validation
-// // const schema = z.object({
-// //   name: z
-// //     .string()
-// //     .min(2, { message: 'Name must be at least 2 characters long' }),
-// //   email: z.string().email({ message: 'Invalid email address' }),
-// //   age: z.number().min(18, { message: 'You must be at least 18 years old' }),
-// // });
+      saveUser([...listOfUsers, newUser]);
+      console.log('МАСИВ ЗАГАЛЬНИЙ:', listOfUsers);
+    } else {
+      console.log('ПОМИЛКА');
+    }
+  };
 
-// // const TestCopy = () => {
-// //   // Initialize the form with React Hook Form and Zod schema resolver
+  return (
+    <SafeAreaView style={style.contaner}>
+      <ScrollView contentContainerStyle={style.scroll}>
+        <View>
+          <Text style={style.human}>Ім`я</Text>
+          <Controller
+            name="formName"
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                onBlur={onBlur}
+                style={style.input}
+                onChangeText={onChange}
+                value={value}
+                placeholder="Введіть ваше ім`я"
+              />
+            )}
+          />
+        </View>
+        <View>
+          {errors.formName && (
+            <Text style={style.error}>{errors.formName.message}</Text>
+          )}
+        </View>
+        <View>
+          <Text style={style.human}>Прізвище</Text>
+          <Controller
+            name="formSurname"
+            control={control}
+            rules={{
+              required: true,
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <TextInput
+                onBlur={onBlur}
+                style={style.input}
+                onChangeText={onChange}
+                value={value}
+                placeholder="Введіть ваше прізвище"
+              />
+            )}
+          />
+        </View>
+        <View>
+          {errors.formSurname && (
+            <Text style={style.error}>{errors.formSurname.message}</Text>
+          )}
+        </View>
+        <Text style={style.human}>Вік</Text>
+        <Controller
+          name="formAge"
+          control={control}
+          rules={{
+            required: true,
+          }}
+          render={({ field: { onChange, onBlur, value } }) => (
+            <TextInput
+              onBlur={onBlur}
+              style={style.input}
+              onChangeText={onChange}
+              keyboardType="numeric"
+              value={value}
+              placeholder="Введіть ваш Вік"
+            />
+          )}
+        />
+        <View>
+          {errors.formAge && (
+            <Text style={style.error}>{errors.formAge.message}</Text>
+          )}
+        </View>
 
-// //  const [formName, setFormName] = useState('');
-// //   const {
-// //     control,
-// //     handleSubmit,
-// //     formState: { errors },
-// //   } = useForm({
-// //     resolver: zodResolver(schema),
-// //   });
+        <View>
+          <Text style={style.human}>
+            Навність роботи:
+            <Switch
+              trackColor={{ false: 'blue', true: 'white' }}
+              onValueChange={onOffSwitch}
+              value={formHasJob}
+            />
+          </Text>
+        </View>
+        <View style={style.upButton}></View>
+        <TouchableOpacity
+          style={[
+            style.button,
+            !isValid && style.buttonDisabled,
+            style.leftButton,
+          ]}
+          onPress={handleSubmit(onSubmit)}
+          disabled={!isValid}
+        >
+          <Text style={style.buttonText}>ЗБЕРЕГТИ</Text>
+        </TouchableOpacity>
 
-// //   // Function to handle form submission
-// //   const onSubmit = (data:any) => {
-// //     console.log(data);
-// //   };
+        <View>
+          <FlatList
+            data={listOfUsers}
+            keyExtractor={item => item.id}
+            renderItem={renderItem}
+            contentContainerStyle={style.list}
+          />
+        </View>
+        {/* <FlatList
+          data={listOfUsers} // джерело даних
+          keyExtractor={item => item.id} // унікальний ключ для кожного елемента
+          renderItem={renderItem} // як рендерити один елемент
+          // extraData={[selectionMode, selectedIds]} // змушує перерендер при зміні цих залежностей
+          // contentContainerStyle={styles.list} // стилі контейнера списку (відступи тощо)
+        /> */}
+      </ScrollView>
+    </SafeAreaView>
+  );
+}
 
-// //   return (
-// //     <View style={styles.container}>
-// //       <Text>Name</Text>
-// //       <Controller
-// //         control={control}
-// //         name="name"
-// //         render={({ field: { onChange, onBlur, value } }) => (
-// //           <TextInput
-// //             style={styles.input}
-// //             onBlur={onBlur}
-// //             onChangeText={onChange}
-// //             value={value}
-// //             placeholder="Enter your name"
-// //           />
-// //         )}
-// //       />
-// //       {errors.name && <Text style={styles.error}>{errors.name.message}</Text>}
+const style = StyleSheet.create({
+  contaner: {
+    backgroundColor: '#DCDCDC',
+  },
+  error: {
+    color: 'red',
+  },
+  input: {
+    borderRadius: 10,
 
-// //       <Text>Email</Text>
-// //       <Controller
-// //         control={control}
-// //         name="email"
-// //         render={({ field: { onChange, onBlur, value } }) => (
-// //           <TextInput
-// //             style={styles.input}
-// //             onBlur={onBlur}
-// //             onChangeText={onChange}
-// //             value={value}
-// //             placeholder="Enter your email"
-// //           />
-// //         )}
-// //       />
-// //       {errors.email && <Text style={styles.error}>{errors.email.message}</Text>}
+    backgroundColor: 'silver',
+    borderColor: 'black',
+    borderWidth: 1,
+  },
+  upButton: {
+    borderRadius: 10,
+    marginTop: 20,
+  },
+  head: {
+    color: 'red',
+    padding: 20,
+    marginTop: 50,
+  },
 
-// //       {/* <Text>Age</Text>
-// //       <Controller
-// //         control={control}
-// //         name="age"
-// //         render={({ field: { onChange, onBlur, value } }) => (
-// //           <TextInput
-// //             style={styles.input}
-// //             onBlur={onBlur}
-// //             onChangeText={val => onChange(val ? parseInt(val, 10) : '')}
-// //             value={value}
-// //             placeholder="Enter your age"
-// //             keyboardType="numeric"
-// //           />
-// //         )}
-// //       />
-// //       {errors.age && <Text style={styles.error}>{errors.age.message}</Text>} */}
+  human: {
+    color: 'black',
+    padding: 5,
+  },
+  scroll: {
+    padding: 16,
+    flexGrow: 1,
+    justifyContent: 'flex-start',
+  },
+  list: {
+    color: 'black',
+    //paddingBottom: 100,
+    backgroundColor: '#f0f0f0',
+    padding: 10,
+    marginBottom: 10,
+    borderRadius: 10,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 10,
+    paddingHorizontal: 10,
+    marginTop: 20,
+  },
 
-// //       <Button title="Submit" onPress={handleSubmit(onSubmit)} />
-// //     </View>
-// //   );
-// // };
+  button: {
+    flex: 1,
+    backgroundColor: '#007BFF',
+    padding: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
 
-// // const styles = StyleSheet.create({
-// //   container: {
-// //     padding: 20,
-// //   },
-// //   input: {
-// //     height: 40,
-// //     borderColor: 'gray',
-// //     borderWidth: 1,
-// //     marginBottom: 10,
-// //     paddingHorizontal: 8,
-// //   },
-// //   error: {
-// //     color: 'red',
-// //   },
-// // });
+  buttonDisabled: {
+    backgroundColor: '#A9A9A9',
+  },
 
-// // export default TestCopy;
+  saveButton: {
+    backgroundColor: '#28a745',
+    marginLeft: 10,
+  },
+
+  leftButton: {
+    marginRight: 10,
+  },
+
+  buttonText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+});

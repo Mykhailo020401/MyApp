@@ -11,7 +11,7 @@ import CounterScreen from './src/screens/CounterScreen';
 import { RootStackParamList } from './src/types/navigation';
 import { colors } from './src/theme';
 import Test from './src/screens/test';
-//import TestCopy from './src/screens/testCopy';
+import TestCopy from './src/screens/testCopy';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -33,6 +33,7 @@ export default function App() {
           <Stack.Screen name="Stopwatch" component={StopwatchScreen} />
           <Stack.Screen name="Counter" component={CounterScreen} />
           <Stack.Screen name="Test" component={Test} />
+          <Stack.Screen name="TestCopy" component={TestCopy} />
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaProvider>
